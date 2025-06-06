@@ -27,9 +27,9 @@ namespace EmailManagement.Controllers
         {
             var email = await _context.Emails.FindAsync(id);
             if (email == null)
-                return NotFound();
+                return NotFound(new { message = "Email não encontrado." });
 
-            return email;
+            return Ok(email);
         }
 
 
@@ -55,7 +55,7 @@ namespace EmailManagement.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!_context.Emails.Any(e=> e.Id == id))
-                    return NotFound();
+                    return NotFound(new {message = "Email não encontrado!"});
                 else
                     throw;
             }
@@ -67,7 +67,9 @@ namespace EmailManagement.Controllers
         {
             var email = await _context.Emails.FindAsync(id);
             if (email == null)
-                return NotFound();
+            {
+                return NotFound(new {message = "Email não encontrado para exclusão."});
+            }
             _context.Emails.Remove(email);
             await _context.SaveChangesAsync();
             return NoContent();
