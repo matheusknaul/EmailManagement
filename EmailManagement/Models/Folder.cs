@@ -5,7 +5,7 @@ namespace EmailManagement.Models
     public class Folder
     {
 
-        int Id { get; set; }
+        public int Id { get; set; }
         [Required(ErrorMessage = "O campo 'Nome' é obrigatório.")]
         public string Name { get; set; }
 

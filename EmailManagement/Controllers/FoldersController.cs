@@ -9,5 +9,52 @@ namespace EmailManagement.Controllers
     [ApiController]
     public class FoldersController : ControllerBase
     {
+
+        private readonly AppDbContext _context;
+        public FoldersController(AppDbContext context)
+        {
+            _context = context;
+        }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Folder>>> GetAll()
+        {
+            return await _context.Folders.ToListAsync();
+        }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Folder>> GetById(int id)
+        {
+            var folder = await _context.Folders.FindAsync(id);
+            if (folder == null)
+                return NotFound(new { message = "Pasta não encontrada." });
+            return Ok(folder);
+        }
+        [HttpPost]
+        public async Task<ActionResult<Folder>> Create(Folder folder)
+        {
+            _context.Folders.Add(folder);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetById), new { id = folder.Id }, folder);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, Folder folder)
+        {
+            if (id != folder.Id)
+                return BadRequest();
+            
+            _context.Entry(folder).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Folders.Any(e => e.Id == id))
+                    return NotFound(new { message = "Pasta não encontrada!" });
+                else
+                    throw;
+            }
+            return NoContent();
+        }
+
     }
 }
