@@ -56,5 +56,24 @@ namespace EmailManagement.Controllers
             return NoContent();
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var folder = await _context.Folders.FindAsync(id);
+            if (folder == null)
+            {
+                return NotFound(new { message = "Destinatário não encontrado para exclusão." });
+            }
+
+            if (folder.isSystem)
+            {
+                return BadRequest(new { message = "Não é possível excluir pastas do sistema." });
+            }
+
+            _context.Folders.Remove(folder);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 }

@@ -37,6 +37,19 @@ namespace EmailManagement.Controllers
         public async Task<ActionResult<User>> Create(User user)
         {
             _context.Users.Add(user);
+
+            var defaultFolders = new[] { "General", "Trash", "Spam", "Draft" };
+            foreach(var folderName in defaultFolders)
+            {
+                var folder = new Folder
+                {
+                    Name = folderName,
+                    UserId = user.Id,
+                    isSystem = true
+                };
+                _context.Folders.Add(folder);
+            }
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetById), new { id =user.Id }, user);
