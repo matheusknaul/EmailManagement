@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using EmailManagement.Data;
+using EmailManagement.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmailManagement.Controllers
 {
