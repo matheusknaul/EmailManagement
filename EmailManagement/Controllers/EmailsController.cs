@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EmailManagement.Data;
 using EmailManagement.Models;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmailManagement.Controllers
