@@ -1,28 +1,127 @@
-﻿using EmailManagement.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using EmailManagement.Models;
 using EmailManagement.Repositories.Interfaces;
 
 namespace EmailManagement.Repositories
 {
     public class FolderRepository : IFolderRepository
     {
-        public Task<bool> CreateFolderAsync(Folder folder)
+        private readonly string _connectionString;
+
+        public FolderRepository(IConfiguration configuration)
         {
-            throw new NotImplementedException();
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public Task<bool> DeleteFolderAsync(int id)
+        public async Task<List<Folder>> GetAllFolders(int userId)
         {
-            throw new NotImplementedException();
+            var folders = new List<Folder>();
+
+            var query = "SELECT Id, Name, UserId, isSystem FROM email_management.Folder WHERE UserId = @UserId";
+
+            using (var connection = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@UserId", userId);
+                await connection.OpenAsync();
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        folders.Add(new Folder
+                        {
+                            Id = reader.GetInt32(0),
+                            Name = reader.GetString(1),
+                            UserId = reader.GetInt32(2),
+                            isSystem = reader.GetBoolean(3)
+                        });
+                    }
+                }
+            }
+
+            return folders;
         }
 
-        public Task<List<Folder>> GetAllFoldersAsync(int userId)
+        public async Task<Folder> GetFolderById(int id)
         {
-            throw new NotImplementedException();
+            Folder folder = null;
+
+            var query = "SELECT Id, Name, UserId, isSystem from email_management.Folder WHERE Id = @Id";
+
+            using (var connection = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                await connection.OpenAsync();
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        folder = new Folder
+                        {
+                            Id = reader.GetInt32(0),
+                            Name = reader.GetString(1),
+                            UserId = reader.GetInt32(2),
+                            isSystem = reader.GetBoolean(3),
+                            TargetSubjects = new List<string>(),
+                            TargetRecipients = new List<Recipient>() 
+                        };
+                    }
+                }
+            }
+
+                return folder;
         }
 
-        public Task<Folder> GetFolderByIdAsync(int id)
+        public async Task<bool> CreateFolder(Folder folder)
         {
-            throw new NotImplementedException();
+            var query = "INSERT INTO email_management.Folder (Name, UserId, isSystem) VALUES (@Name, @UserId, @isSystem);";
+
+            using (var connection = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand(query, connection)) 
+            {
+                command.Parameters.AddWithValue("@Name", folder.Name);
+                command.Parameters.AddWithValue("@UserId", folder.UserId);
+                command.Parameters.AddWithValue("@isSystem", folder.isSystem);
+
+                await connection.OpenAsync();
+                var result = await command.ExecuteNonQueryAsync();
+                return result > 0;
+            }
         }
+
+        public async Task<bool> DeleteFolder(int id)
+        {
+            var queryCheck = "SELECT isSystem FROM email_management.Folder WHERE id = @Id";
+            var queryDelete = "DELETE FROM email_management.Folder WHERE id = @Id";
+
+            using (var connection = new SqlConnection(_connectionString))
+            using (var commandCheck = new SqlCommand(queryCheck, connection))
+            {
+                commandCheck.Parameters.AddWithValue("@Id", id);
+                await connection.OpenAsync();
+
+                var isSystem = (bool?)await commandCheck.ExecuteScalarAsync();
+
+                if (isSystem == true)
+                {
+                    return false;
+                }
+
+                using (var commandDelete = new SqlCommand(queryDelete, connection))
+                {
+                    commandDelete.Parameters.AddWithValue("@Id", id);
+                    var result = await commandDelete.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+
+            }
+        }
+
     }
 }

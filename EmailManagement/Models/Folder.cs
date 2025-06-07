@@ -11,8 +11,6 @@ namespace EmailManagement.Models
         public List<string> TargetSubjects { get; set; }
         public List<Recipient> TargetRecipients { get; set; }
         public int UserId { get; set; }
-        public User User { get; set; }
-
         public bool isSystem { get; set; } = false;
 
     }
