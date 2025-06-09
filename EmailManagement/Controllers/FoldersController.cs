@@ -2,6 +2,7 @@
 using EmailManagement.Data;
 using EmailManagement.Models;
 using Microsoft.EntityFrameworkCore;
+using EmailManagement.Repositories.Interfaces;
 
 namespace EmailManagement.Controllers
 {
@@ -10,10 +11,10 @@ namespace EmailManagement.Controllers
     public class FoldersController : ControllerBase
     {
 
-        private readonly AppDbContext _context;
-        public FoldersController(AppDbContext context)
+        private readonly IFolderRepository _folderRepository;
+        public FoldersController(IFolderRepository folderRepository)
         {
-            _context = context;
+            _folderRepository = folderRepository;
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Folder>>> GetAll()

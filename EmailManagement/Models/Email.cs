@@ -7,12 +7,12 @@ namespace EmailManagement.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "O campo 'Assunto' é obrigatório.")]
-        public string Assunto { get; set; }
+        public string Subject { get; set; }
         [Required(ErrorMessage = "O corpo do email é obrigatório.")]
-        public string Corpo { get; set; }
+        public string Body { get; set; }
         [EmailAddress(ErrorMessage = "Email inválido.")]
-        public string Destinatario { get; set; }
-        public DateTime DataEnvio { get; set; }
+        public int RecipientId { get; set; }
+        public DateTime DateSent { get; set; }
 
 
 

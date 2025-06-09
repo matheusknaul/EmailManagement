@@ -4,10 +4,10 @@ namespace EmailManagement.Repositories.Interfaces
 {
     public interface IFolderRepository
     {
-        Task<List<Folder>> GetAllFolders(int userId);
-        Task<Folder> GetFolderById(int id);
-        Task<bool> CreateFolder(Folder folder);
-        Task<bool> DeleteFolder(int id);
+        Task<List<Folder>> GetAllFoldersAsync(int userId);
+        Task<Folder> GetFolderByIdAsync(int id);
+        Task<bool> CreateFolderAsync(Folder folder);
+        Task<bool> DeleteFolderAsync(int id);
     }
 
 }

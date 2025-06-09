@@ -1,13 +1,22 @@
 using EmailManagement.Data;
+using EmailManagement.Repositories;
+using EmailManagement.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("EmailDb")); // Banco em memória por enquanto
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseInMemoryDatabase("EmailDb"));
+// banco em memória para desenvolvimento, use-o para testes.
 
+//banco em prod:
+builder.Services.AddDbContext<EmailDbContext>(options => options.UseMySql(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
 // Add services to the container.
+
+builder.Services.AddScoped<IFolderRepository, FolderRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

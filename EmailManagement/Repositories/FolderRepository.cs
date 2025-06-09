@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using EmailManagement.Models;
+﻿using EmailManagement.Models;
 using EmailManagement.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
+using MySql.Data.MySqlClient;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace EmailManagement.Repositories
 {
@@ -18,72 +15,65 @@ namespace EmailManagement.Repositories
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<List<Folder>> GetAllFolders(int userId)
+        public async Task<List<Folder>> GetAllFoldersByUserAsync(int userId)
         {
             var folders = new List<Folder>();
-
             var query = "SELECT Id, Name, UserId, isSystem FROM email_management.Folder WHERE UserId = @UserId";
 
-            using (var connection = new SqlConnection(_connectionString))
-            using (var command = new SqlCommand(query, connection))
+            using var connection = new MySqlConnection(_connectionString);
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
             {
-                command.Parameters.AddWithValue("@UserId", userId);
-                await connection.OpenAsync();
-                using (var reader = await command.ExecuteReaderAsync())
+                folders.Add(new Folder
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        folders.Add(new Folder
-                        {
-                            Id = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            UserId = reader.GetInt32(2),
-                            isSystem = reader.GetBoolean(3)
-                        });
-                    }
-                }
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    UserId = reader.GetInt32(2),
+                    isSystem = reader.GetBoolean(3)
+                });
             }
 
             return folders;
         }
 
-        public async Task<Folder> GetFolderById(int id)
+        public async Task<Folder> GetFolderByIdAsync(int id)
         {
             Folder folder = null;
 
             var query = "SELECT Id, Name, UserId, isSystem from email_management.Folder WHERE Id = @Id";
 
-            using (var connection = new SqlConnection(_connectionString))
-            using (var command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Id", id);
-                await connection.OpenAsync();
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    if (await reader.ReadAsync())
-                    {
-                        folder = new Folder
-                        {
-                            Id = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            UserId = reader.GetInt32(2),
-                            isSystem = reader.GetBoolean(3),
-                            TargetSubjects = new List<string>(),
-                            TargetRecipients = new List<Recipient>() 
-                        };
-                    }
-                }
-            }
+            using var connection = new MySqlConnection(_connectionString);
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Id", id);
 
-                return folder;
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                folder = new Folder
+                {
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    UserId = reader.GetInt32(2),
+                    isSystem = reader.GetBoolean(3),
+                    TargetSubjects = new List<string>(),
+                    TargetRecipients = new List<Recipient>()
+                };
+            }
+            return folder;
         }
 
-        public async Task<bool> CreateFolder(Folder folder)
+        public async Task<bool> CreateFolderAsync(Folder folder)
         {
             var query = "INSERT INTO email_management.Folder (Name, UserId, isSystem) VALUES (@Name, @UserId, @isSystem);";
 
-            using (var connection = new SqlConnection(_connectionString))
-            using (var command = new SqlCommand(query, connection)) 
+            using var connection = new MySqlConnection(_connectionString);
+            using var command = new MySqlCommand(query, connection);
             {
                 command.Parameters.AddWithValue("@Name", folder.Name);
                 command.Parameters.AddWithValue("@UserId", folder.UserId);
@@ -95,13 +85,13 @@ namespace EmailManagement.Repositories
             }
         }
 
-        public async Task<bool> DeleteFolder(int id)
+        public async Task<bool> DeleteFolderAsync(int id)
         {
             var queryCheck = "SELECT isSystem FROM email_management.Folder WHERE id = @Id";
             var queryDelete = "DELETE FROM email_management.Folder WHERE id = @Id";
 
-            using (var connection = new SqlConnection(_connectionString))
-            using (var commandCheck = new SqlCommand(queryCheck, connection))
+            using var connection = new MySqlConnection(_connectionString);
+            using var commandCheck = new MySqlCommand(queryCheck, connection);
             {
                 commandCheck.Parameters.AddWithValue("@Id", id);
                 await connection.OpenAsync();
@@ -113,7 +103,7 @@ namespace EmailManagement.Repositories
                     return false;
                 }
 
-                using (var commandDelete = new SqlCommand(queryDelete, connection))
+                using (var commandDelete = new MySqlCommand(queryDelete, connection))
                 {
                     commandDelete.Parameters.AddWithValue("@Id", id);
                     var result = await commandDelete.ExecuteNonQueryAsync();
