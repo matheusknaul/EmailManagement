@@ -16,15 +16,23 @@ namespace EmailManagement.Controllers
         {
             _folderRepository = folderRepository;
         }
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<Folder>>> GetAll()
+        //{
+        //    return await _context.Folders.ToListAsync();
+        //}
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Folder>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Folder>>> GetAllByUser(int userId)
         {
-            return await _context.Folders.ToListAsync();
+            var folders = await _folderRepository.GetAllFoldersByUserAsync(userId);
+            return Ok(folders);
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Folder>> GetById(int id)
         {
-            var folder = await _context.Folders.FindAsync(id);
+            var folder = await _folderRepository.GetFolderByIdAsync(id);
             if (folder == null)
                 return NotFound(new { message = "Pasta não encontrada." });
             return Ok(folder);
@@ -32,35 +40,32 @@ namespace EmailManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<Folder>> Create(Folder folder)
         {
-            _context.Folders.Add(folder);
-            await _context.SaveChangesAsync();
+            await _folderRepository.SaveFolderAsync(folder);
             return CreatedAtAction(nameof(GetById), new { id = folder.Id }, folder);
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Folder folder)
         {
-            if (id != folder.Id)
-                return BadRequest();
-            
-            _context.Entry(folder).State = EntityState.Modified;
+            if (folder == null || id!= folder.Id) //arrumar essa lógica cagada
+            {
+                return BadRequest( new { message = "Você deve fornecer um folder válido!" });
+            }
+
             try
             {
-                await _context.SaveChangesAsync();
+                var sucess = await _folderRepository.SaveFolderAsync(folder);
+                return Ok(folder);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception exception) 
             {
-                if (!_context.Folders.Any(e => e.Id == id))
-                    return NotFound(new { message = "Pasta não encontrada!" });
-                else
-                    throw;
+                return BadRequest(new { message = "Erro ao atualizar a pasta: " + exception.Message });
             }
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var folder = await _context.Folders.FindAsync(id);
+            var folder = await _folderRepository.GetFolderByIdAsync(id);
             if (folder == null)
             {
                 return NotFound(new { message = "Destinatário não encontrado para exclusão." });
@@ -71,8 +76,7 @@ namespace EmailManagement.Controllers
                 return BadRequest(new { message = "Não é possível excluir pastas do sistema." });
             }
 
-            _context.Folders.Remove(folder);
-            await _context.SaveChangesAsync();
+            await _folderRepository.DeleteFolderAsync(id);
             return NoContent();
         }
 

@@ -68,7 +68,7 @@ namespace EmailManagement.Repositories
             return folder;
         }
 
-        public async Task<bool> CreateFolderAsync(Folder folder)
+        public async Task<bool> SaveFolderAsync(Folder folder)
         {
             var query = "INSERT INTO email_management.Folder (Name, UserId, isSystem) VALUES (@Name, @UserId, @isSystem);";
 

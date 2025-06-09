@@ -11,6 +11,7 @@ namespace EmailManagement.Models
         [Required(ErrorMessage = "O corpo do email é obrigatório.")]
         public string Body { get; set; }
         [EmailAddress(ErrorMessage = "Email inválido.")]
+        public int UserId { get; set; }
         public int RecipientId { get; set; }
         public DateTime DateSent { get; set; }
 
