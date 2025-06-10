@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EmailManagement.Data;
+﻿using EmailManagement.Data;
 using EmailManagement.Models;
+using EmailManagement.Repositories;
+using EmailManagement.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmailManagement.Controllers
@@ -9,82 +11,67 @@ namespace EmailManagement.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepository;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IUserRepository userRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAll()
+        public async Task<ActionResult<IEnumerable<User>>> GetAllUser()
         {
-            return await _context.Users.ToListAsync();
+            var users = await _userRepository.GetAllUsersAsync();
+            return Ok(users);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetById(int id)
+        public async Task<ActionResult<User>> GetUserById(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
+            {
                 return NotFound(new { message = "Usuário não encontrado." });
-
+            }
             return Ok(user);
         }
-
 
         [HttpPost]
         public async Task<ActionResult<User>> Create(User user)
         {
-            _context.Users.Add(user);
-
-            var defaultFolders = new[] { "General", "Trash", "Spam", "Draft" };
-            foreach(var folderName in defaultFolders)
-            {
-                var folder = new Folder
-                {
-                    Name = folderName,
-                    UserId = user.Id,
-                    isSystem = true
-                };
-                _context.Folders.Add(folder);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id =user.Id }, user);
+            await _userRepository.SaveUserAsync(user);
+            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, User user)
         {
-            if (id != user.Id)
-                return BadRequest();
-            _context.Entry(user).State = EntityState.Modified;
+            if (User == null || id != user.Id)
+            {
+                return BadRequest(new { message = "Você deve fornecer um usuário válido!" });
+            }
+
             try
             {
-                await _context.SaveChangesAsync();
+                var sucess = await _userRepository.SaveUserAsync(user);
+                return Ok(user);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception exception)
             {
-                if (!_context.Users.Any(e => e.Id == id))
-                    return NotFound(new { message = "Usuário não encontrado!" });
-                else
-                    throw;
+                return BadRequest(new { message = "Erro ao atualizar o usuário: " + exception.Message });
             }
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
-                return NotFound(new { message = "Usuário não encontrado para exclusão." });
+                return NotFound(new { message = "Destinatário não encontrado para exclusão." });
             }
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+
+            await _userRepository.DeleteUserAsync(id);
             return NoContent();
         }
 
