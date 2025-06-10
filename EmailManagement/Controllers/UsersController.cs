@@ -46,7 +46,7 @@ namespace EmailManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, User user)
         {
-            if (User == null || id != user.Id)
+            if (user == null || id != user.Id)
             {
                 return BadRequest(new { message = "Você deve fornecer um usuário válido!" });
             }

@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EmailManagement.Data;
+﻿using EmailManagement.Data;
 using EmailManagement.Models;
-using Microsoft.EntityFrameworkCore;
+using EmailManagement.Repositories;
 using EmailManagement.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmailManagement.Controllers
 {
@@ -17,15 +18,16 @@ namespace EmailManagement.Controllers
             _emailRepository = emailRepository;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Email>>> GetAll() {
-            return await _context.Emails.ToListAsync();
+        [HttpGet("user/{id}")]
+        public async Task<ActionResult<IEnumerable<Email>>> GetAllByUser(int userId) {
+            var emails = await _emailRepository.GetAllEmailsByUserAsync(userId);
+            return Ok(emails);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Email>> GetById(int id)
         {
-            var email = await _context.Emails.FindAsync(id);
+            var email = await _emailRepository.GetEmailByIdAsync(id);
             if (email == null)
                 return NotFound(new { message = "Email não encontrado." });
 
@@ -36,8 +38,7 @@ namespace EmailManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<Email>> Create(Email email)
         {
-            _context.Emails.Add(email);
-            await _context.SaveChangesAsync();
+            await _emailRepository.SaveEmailAsync(email);
 
             return CreatedAtAction(nameof(GetById), new { id = email.Id}, email);
         }
@@ -45,33 +46,31 @@ namespace EmailManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Email email)
         {
-            if (id != email.Id)
-                return BadRequest();
-            _context.Entry(email).State = EntityState.Modified;
+            if (email == null || id != email.Id)
+            {
+                return BadRequest(new { message = "Você deve fornecer um email válido!" });
+            }
+
             try
             {
-                await _context.SaveChangesAsync();
+                var sucess = await _emailRepository.SaveEmailAsync(email);
+                return Ok(email);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception exception)
             {
-                if (!_context.Emails.Any(e=> e.Id == id))
-                    return NotFound(new {message = "Email não encontrado!"});
-                else
-                    throw;
+                return BadRequest(new { message = "Erro ao atualizar o email: " + exception.Message });
             }
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var email = await _context.Emails.FindAsync(id);
+            var email = await _emailRepository.GetEmailByIdAsync(id);
             if (email == null)
             {
                 return NotFound(new {message = "Email não encontrado para exclusão."});
             }
-            _context.Emails.Remove(email);
-            await _context.SaveChangesAsync();
+            await _emailRepository.DeleteEmailAsync(id);
             return NoContent();
         }
 
