@@ -2,6 +2,7 @@
 using EmailManagement.Data;
 using EmailManagement.Models;
 using Microsoft.EntityFrameworkCore;
+using EmailManagement.Repositories.Interfaces;
 
 namespace EmailManagement.Controllers
 {
@@ -9,11 +10,11 @@ namespace EmailManagement.Controllers
     [Route("api/[controller]")]
     public class EmailsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IEmailRepository _emailRepository;
 
-        public EmailsController(AppDbContext context)
+        public EmailsController(IEmailRepository emailRepository)
         {
-            _context = context;
+            _emailRepository = emailRepository;
         }
 
         [HttpGet]
