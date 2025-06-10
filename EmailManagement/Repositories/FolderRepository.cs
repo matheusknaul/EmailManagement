@@ -18,7 +18,7 @@ namespace EmailManagement.Repositories
         public async Task<List<Folder>> GetAllFoldersByUserAsync(int userId)
         {
             var folders = new List<Folder>();
-            var query = "SELECT Id, Name, UserId, isSystem FROM email_management.Folder WHERE UserId = @UserId";
+            var query = "SELECT Id, Name, user_id, is_system FROM email_management.Folder WHERE user_id = @UserId";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -45,7 +45,7 @@ namespace EmailManagement.Repositories
         {
             Folder folder = null;
 
-            var query = "SELECT Id, Name, UserId, isSystem from email_management.Folder WHERE Id = @Id";
+            var query = "SELECT Id, Name, user_id, is_system from email_management.Folder WHERE Id = @Id";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -70,7 +70,7 @@ namespace EmailManagement.Repositories
 
         public async Task<bool> SaveFolderAsync(Folder folder)
         {
-            var query = "INSERT INTO email_management.Folder (Name, UserId, isSystem) VALUES (@Name, @UserId, @isSystem);";
+            var query = "INSERT INTO email_management.Folder (Name, user_id, is_system) VALUES (@Name, @UserId, @isSystem);";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -87,7 +87,7 @@ namespace EmailManagement.Repositories
 
         public async Task<bool> DeleteFolderAsync(int id)
         {
-            var queryCheck = "SELECT isSystem FROM email_management.Folder WHERE id = @Id";
+            var queryCheck = "SELECT is_system FROM email_management.Folder WHERE id = @Id";
             var queryDelete = "DELETE FROM email_management.Folder WHERE id = @Id";
 
             using var connection = new MySqlConnection(_connectionString);

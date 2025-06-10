@@ -18,7 +18,7 @@ namespace EmailManagement.Controllers
             _emailRepository = emailRepository;
         }
 
-        [HttpGet("user/{id}")]
+        [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Email>>> GetAllByUser(int userId) {
             var emails = await _emailRepository.GetAllEmailsByUserAsync(userId);
             return Ok(emails);

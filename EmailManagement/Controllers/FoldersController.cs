@@ -22,7 +22,7 @@ namespace EmailManagement.Controllers
         //    return await _context.Folders.ToListAsync();
         //}
 
-        [HttpGet("user/{id}")]
+        [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Folder>>> GetAllByUser(int userId)
         {
             var folders = await _folderRepository.GetAllFoldersByUserAsync(userId);

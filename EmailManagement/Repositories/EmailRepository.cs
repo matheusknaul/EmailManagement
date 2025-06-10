@@ -19,7 +19,7 @@ namespace EmailManagement.Repositories
         public async Task<List<Email>> GetAllEmailsByUserAsync(int userId)
         {
             var emails = new List<Email>();
-            var query = "SELECT Id, Subject, Body, UserId, RecipientId, DateSent FROM email_management.Email WHERE UserId = @UserId";
+            var query = "SELECT Id, Subject, Body, user_id, recipient_id, date_sent FROM email_management.Email WHERE user_id = @UserId";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -49,7 +49,7 @@ namespace EmailManagement.Repositories
         {
             Email email = null;
 
-            var query = "SELECT Id, Subject, Body, UserId, RecipientId, DateSent FROM email_management.Email WHERE Id = @Id";
+            var query = "SELECT Id, Subject, Body, user_id, recipient_id, date_sent FROM email_management.Email WHERE Id = @Id";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -74,7 +74,7 @@ namespace EmailManagement.Repositories
 
         public async Task<bool> SaveEmailAsync(Email email)
         {
-            var query = "INSERT INTO email_management.Email (Subject, Body, UserId, RecipientId) VALUES (@Subject, @Body, @UserId, @RecipientId);";
+            var query = "INSERT INTO email_management.Email (Subject, Body, user_id, recipient_id, date_sent) VALUES (@Subject, @Body, @UserId, @RecipientId, @DateSent);";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -83,6 +83,7 @@ namespace EmailManagement.Repositories
                 command.Parameters.AddWithValue("@Body", email.Body);
                 command.Parameters.AddWithValue("@UserId", email.UserId);
                 command.Parameters.AddWithValue("@RecipientId", email.RecipientId);
+                command.Parameters.AddWithValue("@DateSent", email.DateSent);
 
                 await connection.OpenAsync();
                 var result = await command.ExecuteNonQueryAsync();
