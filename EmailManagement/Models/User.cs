@@ -11,8 +11,8 @@ namespace EmailManagement.Models
         public string Password { get; set; }
         [EmailAddress(ErrorMessage = "Email inválido.")]
         public string Email { get; set; }
-        public string PerfilPicturePath { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string AvatarURL { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public List<Folder> Folders { get; set; }
 

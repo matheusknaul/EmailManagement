@@ -19,7 +19,7 @@ namespace EmailManagement.Repositories
         public async Task<List<User>> GetAllUsersAsync()
         {
             var users = new List<User>();
-            var query = "SELECT Id, Name, Email, PerfilPicturePath, CreatedAt FROM email_management.User";
+            var query = "SELECT Id, Name, Email, avatar_url, created_at FROM email_management.User";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -33,7 +33,7 @@ namespace EmailManagement.Repositories
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Email = reader.GetString(2),
-                    PerfilPicturePath = reader.GetString(3),
+                    AvatarURL = reader.GetString(3),
                     CreatedAt = reader.GetDateTime(4)
                 });
             }
@@ -43,7 +43,7 @@ namespace EmailManagement.Repositories
         public async Task<User> GetUserByIdAsync(int id)
         {
             User user = null;
-            var query = "SELECT Id, Name, Email, PerfilPicturePath, CreatedAt FROM email_management.User WHERE Id = @Id";
+            var query = "SELECT Id, Name, Email, avatar_url, created_at FROM email_management.User WHERE Id = @Id";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
@@ -59,7 +59,7 @@ namespace EmailManagement.Repositories
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Email = reader.GetString(2),
-                    PerfilPicturePath = reader.GetString(3),
+                    AvatarURL = reader.GetString(3),
                     CreatedAt = reader.GetDateTime(4)
                 };
             }
@@ -69,16 +69,16 @@ namespace EmailManagement.Repositories
 
         public async Task<bool> SaveUserAsync(User user)
         {
-            var query = "INSERT INTO email_management.User (Name, Password, Email, PerfilPicturePath) VALUES (@Name, @Password, @Email, @PerfilPicturePath);";
+            var query = "INSERT INTO email_management.User (Name, Password, Email, avatar_url) VALUES (@Name, @Password, @Email, @AvatarUrl);";
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@Name", user.Name);
             command.Parameters.AddWithValue("@Password", user.Password);
             command.Parameters.AddWithValue("@Email", user.Email);
 
-            var perfilPicturePath = user.PerfilPicturePath ?? string.Empty;
+            var avatarURL = user.AvatarURL ?? string.Empty;
 
-            command.Parameters.AddWithValue("@PerfilPicturePath", perfilPicturePath);
+            command.Parameters.AddWithValue("@AvatarUrl", avatarURL);
 
             await connection.OpenAsync();
             var result = await command.ExecuteNonQueryAsync();
