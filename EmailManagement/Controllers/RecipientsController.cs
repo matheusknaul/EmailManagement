@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using EmailManagement.Data;
+﻿using EmailManagement.Data;
 using EmailManagement.Models;
+using EmailManagement.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmailManagement.Controllers
@@ -10,70 +11,69 @@ namespace EmailManagement.Controllers
     [Route("api/[controller]")]
     public class RecipientsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IRecipientRepository _recipientRepository;
 
-        public RecipientsController(AppDbContext context)
+        public RecipientsController(IRecipientRepository recipientRepository)
         {
-            _context = context;
+            _recipientRepository = recipientRepository;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipient>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Recipient>>> GetAllRecipients()
         {
-            return await _context.Recipients.ToListAsync();
+            var recipients = await _recipientRepository.GetAllRecipientsAsync();
+            return Ok(recipients);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Recipient>> GetById(int id)
+        public async Task<ActionResult<Recipient>> GetRecipientById(int id)
         {
-            var recipient = await _context.Recipients.FindAsync(id);
+            var recipient = await _recipientRepository.GetRecipientByIdAsync(id);
             if (recipient == null)
+            {
                 return NotFound(new { message = "Destinatário não encontrado." });
-
+            }
             return Ok(recipient);
         }
-
 
         [HttpPost]
         public async Task<ActionResult<Recipient>> Create(Recipient recipient)
         {
-            _context.Recipients.Add(recipient);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = recipient.Id }, recipient);
+            await _recipientRepository.SaveRecipientAsync(recipient);
+            return CreatedAtAction(nameof(GetRecipientById), new { id = recipient.Id }, recipient);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Recipient recipient)
         {
-            if (id != recipient.Id)
-                return BadRequest();
-            _context.Entry(recipient).State = EntityState.Modified;
+            if (recipient == null || id != recipient.Id)
+            {
+                return BadRequest(new { message = "Você deve fornecer um destinatário válido!" });
+            }
+
             try
             {
-                await _context.SaveChangesAsync();
+                var sucess = await _recipientRepository.SaveRecipientAsync(recipient);
+                return Ok(recipient);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception exception)
             {
-                if (!_context.Recipients.Any(e => e.Id == id))
-                    return NotFound(new { message = "Destinatário não encontrado!" });
-                else
-                    throw;
+                return BadRequest(new { message = "Erro ao atualizar o destinatário: " + exception.Message });
             }
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var recipient = await _context.Recipients.FindAsync(id);
-            if (recipient == null)
+            var user = await _recipientRepository.GetRecipientByIdAsync(id);
+            if (user == null)
             {
                 return NotFound(new { message = "Destinatário não encontrado para exclusão." });
             }
-            _context.Recipients.Remove(recipient);
-            await _context.SaveChangesAsync();
+
+            await _recipientRepository.DeleteRecipientAsync(id);
             return NoContent();
         }
+
     }
 }
