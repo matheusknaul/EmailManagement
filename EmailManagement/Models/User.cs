@@ -16,5 +16,7 @@ namespace EmailManagement.Models
 
         public List<Folder> Folders { get; set; }
 
+        public Role Role { get; set; }
+
     }
 }
