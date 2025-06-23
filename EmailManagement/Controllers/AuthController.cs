@@ -3,7 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using EmailManagement.Models; 
+using EmailManagement.Models;
+using EmailManagement.Services;
 namespace EmailManagement.Controllers
 {
     [Route("api/[controller]")]
@@ -11,6 +12,7 @@ namespace EmailManagement.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly AuthService authService;
 
         public AuthController(IConfiguration configuration)
         {
