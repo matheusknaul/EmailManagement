@@ -45,6 +45,29 @@ namespace EmailManagement.Repositories
 
         }
 
+        public async Task<List<Email>> GetEmailsBySubjectAsync(string subject)
+        {
+            List<Email> emails = new List<Email>();
+
+            var query = "SELECT Id, Subject FROM email_management.Email WHERE Subject LIKE @Subject";
+
+            using var connection = new MySqlConnection(_connectionString);
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Id", subject);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                emails.Add(new Email
+                {
+                    Id = reader.GetInt32(0),
+                    Subject = reader.GetString(1),
+                });
+            }
+            return emails;
+        }
+
         public async Task<Email> GetEmailByIdAsync(int id)
         {
             Email email = null;

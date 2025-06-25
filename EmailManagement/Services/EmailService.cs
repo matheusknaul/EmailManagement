@@ -8,11 +8,15 @@ namespace EmailManagement.Services
         //Testando primeiro com Strings
         public string[] GetEmailsBySearch(string query)
         {
-
-            //Adicionar lógica de busca de emails aqui
-
             string[] emails = query.Split(' ');
 
+            //Aqui testarei e brincarei com n maneiras de fazer essa busca.
+            //TODO: Métrica de elapsed time.
+            //Maneira 1:
+            for(int i = 0; i < emails.Length; i++)
+            {
+                
+            }
 
             return emails;
 
