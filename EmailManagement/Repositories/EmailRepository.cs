@@ -49,11 +49,11 @@ namespace EmailManagement.Repositories
         {
             List<Email> emails = new List<Email>();
 
-            var query = "SELECT Id, Subject FROM email_management.Email WHERE Subject LIKE @Subject";
+            var query = "SELECT id, subject FROM email_management.Email WHERE subject COLLATE utf8mb4_general_ci LIKE @Subject";
 
             using var connection = new MySqlConnection(_connectionString);
             using var command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Id", subject);
+            command.Parameters.AddWithValue("@Subject", $"%{subject}%");
 
             await connection.OpenAsync();
             using var reader = await command.ExecuteReaderAsync();

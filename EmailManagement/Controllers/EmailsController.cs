@@ -24,6 +24,13 @@ namespace EmailManagement.Controllers
             return Ok(emails);
         }
 
+        [HttpGet("subject/{subject}")]
+        public async Task<ActionResult<IEnumerable<Email>>> GetEmailsBySubject(string subject) 
+        {
+            var emails = await _emailRepository.GetEmailsBySubjectAsync(subject);
+            return Ok(emails);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Email>> GetById(int id)
         {
