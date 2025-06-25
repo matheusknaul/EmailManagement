@@ -5,13 +5,22 @@ namespace EmailManagement.Services
     public class EmailService
     {
 
-        public List<Email> GetEmailsBySearch()
+        //Testando primeiro com Strings
+        public string[] GetEmailsBySearch(string query)
         {
 
             //Adicionar lógica de busca de emails aqui
 
-            return new List<Email>();
+            string[] emails = query.Split(' ');
 
+
+            return emails;
+
+        }
+
+        public List<Email> GetEmailByFilter() {
+
+            return new List<Email>();
         }
     }
 }

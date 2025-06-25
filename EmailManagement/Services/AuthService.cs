@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EmailManagement.Models;
+using System.Security.Cryptography;
 
 namespace EmailManagement.Services
 {
@@ -29,8 +30,11 @@ namespace EmailManagement.Services
                 claims.Add(new Claim("permission", permission.Name));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var base64Key = _configuration["Jwt:Key"];
+            var keyBytes = Convert.FromBase64String(base64Key);
+            var key = new SymmetricSecurityKey(keyBytes);
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],

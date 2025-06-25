@@ -14,9 +14,10 @@ namespace EmailManagement.Controllers
         private readonly IConfiguration _configuration;
         private readonly AuthService authService;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, AuthService authService)
         {
             _configuration = configuration;
+            this.authService = authService;
         }
 
         [HttpPost("login")]
@@ -24,26 +25,24 @@ namespace EmailManagement.Controllers
         {
             if (login.Username == "admin" && login.Password == "123") //teste, ajustar para consulta no banco
             {
-                var claims = new[]
+                var user = new User
                 {
-                    new Claim(ClaimTypes.Name, login.Username),
-                    new Claim(ClaimTypes.Role, "admin")
+                    Id = 1,
+                    Name = "Admin",
+                    Role = new Role { Id = 1, Name = "Administrator" }
                 };
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("aaaaaaaaa"));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var permissions = new List<Permission>
+                {
+                    new Permission { Name = "FullAcess" },
 
-                var token = new JwtSecurityToken(
-                    issuer:null,
-                    audience:null,
-                    claims: claims,
-                    expires:DateTime.Now.AddMinutes(30),
-                    signingCredentials: creds
-                    );
+                };
+
+                var token = authService.GenerateJwtToken(user, permissions);
 
                 return Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(token)
+                    token
                 });
             }
 
